@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Propuesta Solor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#01204F; --night:#050F22; --ink:#F2F5F9; --muted:#A9B8CF; --accent:#0DA2FE;
+  --on-accent:#050F22; --step1:#0A1A36; --step2:#112647; --danger:#F2766B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--night);color:var(--ink);font-family:Archivo,system-ui,sans-serif;font-size:17px;line-height:1.5;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overflow-x:hidden}
+h1,h2,h3{font-stretch:115%;font-weight:700;line-height:1.05;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(36px,6vw,72px)} h2{font-size:clamp(28px,4vw,48px)} h3{font-size:20px;font-stretch:100%}
+p{margin:0}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--accent);color:var(--on-accent);border:0;height:48px;padding:0 24px;font-size:15px;font-weight:600;border-radius:0;
+  display:inline-flex;align-items:center;gap:10px;transition:background .15s}
+.btn:hover{background:#5BBEFF}
+.btn:focus-visible,.thumb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:32px 16px 64px}
+header.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;max-width:1180px;margin:0 auto}
+header.bar img{height:34px;width:auto}
+.prog{flex:1;max-width:360px;height:4px;background:var(--step2)}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .4s}
+.step{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.screen{animation:in .5s ease both}
+@keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.center{min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px 16px}
+.center .box{max-width:620px;display:grid;gap:20px;justify-items:center}
+.lead{font-size:19px;color:var(--muted);max-width:60ch}
+.hero{background:var(--navy);padding:56px 16px}
+.hero .in{max-width:1180px;margin:0 auto;display:grid;gap:20px}
+.rules{display:grid;gap:12px;margin:8px 0 0;padding:0;list-style:none;text-align:left}
+.rules li{display:flex;gap:12px;align-items:flex-start;color:var(--ink)}
+.rules svg{flex:none;margin-top:3px;color:var(--accent)}
+/* paleta */
+.logos{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0}
+.logos div{height:300px;padding:24px}
+.logos canvas{width:100%;height:100%;object-fit:contain;display:block}
+.sw{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:24px 0}
+@media (max-width:1100px){.sw{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.sw{grid-template-columns:1fr 1fr}}
+.sw .c{background:var(--step1)}
+.sw .chip{height:110px}
+.sw .t{padding:14px;display:grid;gap:4px;font-size:14px}
+.sw .t b{font-size:16px} .sw .hex{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+.sw .t span{color:var(--muted)}
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;margin-top:32px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+td,th{text-align:left;padding:12px 8px;border-bottom:1px solid var(--step2);font-size:15px}
+th{color:var(--muted);font-weight:500}
+.type{background:var(--step1);padding:24px;display:grid;gap:8px}
+.type .aa{font-size:72px;font-stretch:118%;font-weight:700;line-height:1}
+/* diseño */
+.dz{display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start}
+.stage{position:relative;background:#000;aspect-ratio:16/10;overflow:hidden}
+.stage canvas{width:100%;height:100%;display:block}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.thumb{height:56px;background:var(--step1);border:0;padding:0;color:var(--muted);font-size:13px}
+.thumb[aria-pressed=true]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.info{display:grid;gap:18px}
+.tag{font-size:14px;color:var(--muted)}
+.price{background:var(--navy);padding:20px;display:grid;gap:4px}
+.price b{font-size:44px;font-stretch:112%;font-variant-numeric:tabular-nums;line-height:1}
+.price span{font-size:14px;color:var(--muted)}
+.info ul{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--ink)}
+.rec{justify-self:start;display:inline-block;background:var(--accent);color:var(--on-accent);font-size:13px;font-weight:700;padding:4px 10px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:32px;flex-wrap:wrap}
+.note{font-size:14px;color:var(--muted)}
+/* resumen */
+.inc{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px}
+.inc ul{padding-left:20px;margin:12px 0 0;display:grid;gap:6px}
+/* escudo */
+#shield{position:fixed;inset:0;z-index:50;background:var(--night);display:none;place-items:center;text-align:center;padding:24px}
+#shield.on{display:grid}
+body.hidden-content #app{filter:blur(40px)}
+.wm{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.06;overflow:hidden}
+.wm div{position:absolute;inset:-50%;transform:rotate(-24deg);font-size:18px;line-height:64px;white-space:pre;color:#fff;font-weight:600}
+@media (max-width:860px){.dz,.two,.inc{grid-template-columns:1fr}.logos{grid-template-columns:1fr}}
+@media print{body{display:none!important}}
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite">
+  <div class="center"><div class="box"><p class="lead">Verificando el enlace…</p></div></div>
+</div>
+<div id="shield" role="alertdialog" aria-label="Contenido protegido"><div class="box" style="max-width:520px;display:grid;gap:16px">
+  <h2>Contenido protegido</h2><p class="lead" id="shieldMsg">Vuelve a esta ventana para continuar.</p></div></div>
+<script>
+'use strict';
+(() => {
+const PUBLIC_KEY = {"kty":"EC","x":"Fy6g7ZHKZGQJSFijfWMQ8qNnhYm3oWeqnfCJVaFTnmo","y":"XvhheMlyUbEgZ1Gi-T77gYg8aa2yyHMJ3nEqcOKO9hI","crv":"P-256"};
+const app = document.getElementById('app');
+const shield = document.getElementById('shield');
+const shieldMsg = document.getElementById('shieldMsg');
+const ARROW = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>';
+let ended = false, data = null, tok = null, hiddenAt = 0;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const b64u = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+const q = n => 'Q' + n.toLocaleString('es-GT');
+const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+
+function message(title, text) {
+  app.innerHTML = `<div class="center screen"><div class="box"><h2>${esc(title)}</h2><p class="lead">${esc(text)}</p></div></div>`;
+}
+
+function end(reason) {
+  if (ended) return;
+  ended = true;
+  data = null;
+  document.querySelectorAll('canvas').forEach(c => { c.width = 0; c.height = 0; });
+  document.querySelector('.wm')?.remove();
+  shield.classList.remove('on'); document.body.classList.remove('hidden-content');
+  message('Presentación finalizada', reason || 'Este enlace era de un solo uso y ya no está disponible. Si necesitas verla de nuevo, pide un enlace nuevo a quien te lo envió.');
+}
+
+// ---------- verificación del enlace ----------
+async function start() {
+  const m = location.hash.match(/t=([\w-]+)\.([\w-]+)/);
+  // El token sale de la barra de direcciones de inmediato: recargar no vuelve a abrir la presentación.
+  history.replaceState(null, '', location.pathname);
+  if (!m) return message('Enlace no válido', 'Este enlace está incompleto o ya fue utilizado. Pide uno nuevo a quien te lo envió.');
+  const [_, p64, s64] = m;
+  let payload;
+  try {
+    const key = await crypto.subtle.importKey('jwk', PUBLIC_KEY, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+    const ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, b64u(s64), new TextEncoder().encode(p64));
+    if (!ok) throw 0;
+    payload = JSON.parse(new TextDecoder().decode(b64u(p64)));
+  } catch { return message('Enlace no válido', 'Este enlace fue modificado o no es auténtico.'); }
+
+  const usedKey = 'solor-used-' + payload.i;
+  if (store.get(usedKey)) return message('Enlace ya utilizado', 'Esta presentación ya se abrió una vez en este dispositivo. Pide un enlace nuevo a quien te lo envió.');
+
+  let now = Date.now(), revoked = [];
+  try {
+    const r = await fetch('revoked.json?_=' + now, { cache: 'no-store' });
+    const d = r.headers.get('date'); if (d) now = Date.parse(d) || now;  // hora del servidor, no la del equipo
+    if (r.ok) revoked = (await r.json()).ids || [];
+  } catch {}
+  if (revoked.includes(payload.i)) return message('Enlace desactivado', 'Este enlace fue desactivado. Pide uno nuevo a quien te lo envió.');
+  if (now > payload.e * 1000) return message('Enlace vencido', 'El tiempo para ver esta presentación terminó. Pide un enlace nuevo a quien te lo envió.');
+
+  store.set(usedKey, String(Date.now()));
+  tok = payload;
+  try {
+    const bin = new Uint8Array(await (await fetch('data.bin', { cache: 'no-store' })).arrayBuffer());
+    const k = await crypto.subtle.importKey('raw', b64u(payload.k), 'AES-GCM', false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bin.slice(0, 12) }, k, bin.slice(12));
+    data = JSON.parse(new TextDecoder().decode(plain));
+  } catch { return message('Enlace no disponible', 'Esta versión del catálogo ya no está activa. Pide un enlace nuevo a quien te lo envió.'); }
+  armGuards();
+  watermark();
+  intro();
+}
+
+// ---------- protecciones ----------
+function hide(msg) { if (ended) return; shieldMsg.textContent = msg || 'Vuelve a esta ventana para continuar.'; shield.classList.add('on'); document.body.classList.add('hidden-content'); }
+function show() { shield.classList.remove('on'); document.body.classList.remove('hidden-content'); }
+
+function armGuards() {
+  for (let i = 0; i < 3; i++) history.pushState({ g: i }, '', location.pathname);
+  addEventListener('popstate', () => end('Saliste de la presentación. Por seguridad, cada enlace se puede ver una sola vez.'));
+  ['contextmenu','dragstart','selectstart','copy','cut'].forEach(ev => addEventListener(ev, e => e.preventDefault(), true));
+  addEventListener('keydown', e => {
+    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    if (k === 'printscreen' || k === 'f12' || (mod && 'spuc'.includes(k) && k.length === 1) || (mod && e.shiftKey && 'ijc345'.includes(k)) || (e.metaKey && e.shiftKey)) {
+      e.preventDefault();
+      try { navigator.clipboard?.writeText(''); } catch {}
+      hide('Las capturas y descargas están deshabilitadas en esta presentación.');
+      setTimeout(show, 2500);
+    }
+  }, true);
+  addEventListener('keyup', e => { if (e.key === 'PrintScreen') { try { navigator.clipboard?.writeText(''); } catch {} } }, true);
+  addEventListener('blur', () => hide());
+  addEventListener('focus', show);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); hide(); }
+    else if (hiddenAt && Date.now() - hiddenAt > 90000) end('La presentación se cerró por inactividad. Cada enlace se puede ver una sola vez.');
+  });
+  addEventListener('beforeprint', () => hide('La impresión está deshabilitada.'));
+  // Herramientas de desarrollo: se compara contra el marco del navegador medido al abrir, no contra un valor fijo.
+  const base = { w: outerWidth - innerWidth, h: outerHeight - innerHeight };
+  let devOpen = false;
+  setInterval(() => {
+    if (ended) return;
+    const open = outerWidth - innerWidth - base.w > 200 || outerHeight - innerHeight - base.h > 200;
+    if (open && !devOpen) hide('Cierra las herramientas del navegador para continuar.');
+    if (!open && devOpen && document.hasFocus()) show();
+    devOpen = open;
+  }, 1000);
+}
+
+function watermark() {
+  const line = `${tok.n} · confidencial · ${tok.i}     `;
+  const w = document.createElement('div'); w.className = 'wm'; w.setAttribute('aria-hidden', 'true');
+  const inner = document.createElement('div'); inner.textContent = (line.repeat(12) + '\n').repeat(60);
+  w.appendChild(inner); document.body.appendChild(w);
+}
+
+// Las imágenes se pintan en canvas con la marca de agua incrustada; nunca existe un <img> descargable.
+async function paint(canvas, src) {
+  const blob = await (await fetch(src)).blob();
+  const bmp = await createImageBitmap(blob);
+  if (ended) return;
+  canvas.width = bmp.width; canvas.height = bmp.height;
+  const g = canvas.getContext('2d');
+  g.drawImage(bmp, 0, 0); bmp.close();
+  g.save(); g.translate(canvas.width / 2, canvas.height / 2); g.rotate(-0.42);
+  g.font = '600 22px Archivo, sans-serif'; g.fillStyle = 'rgba(255,255,255,.13)'; g.textAlign = 'center';
+  const t = `${tok.n} · Propuesta confidencial · ${tok.i}`;
+  for (let y = -canvas.height; y < canvas.height; y += 90) for (let x = -canvas.width; x < canvas.width; x += 560) g.fillText(t, x + ((y / 90) % 2) * 280, y);
+  g.restore();
+}
+
+function clearScreen() {
+  app.querySelectorAll('canvas').forEach(c => { c.width = 0; c.height = 0; });
+  app.innerHTML = '';
+  scrollTo(0, 0);
+}
+
+function bar(stepLabel, pct) {
+  return `<header class="bar"><canvas class="logo" width="0" height="0" aria-label="Solor Distribution" role="img" style="height:34px"></canvas>
+    <div class="prog" role="progressbar" aria-valuenow="${Math.round(pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct * 100}%"></i></div>
+    <span class="step">${esc(stepLabel)}</span></header>`;
+}
+async function paintLogo() {
+  const c = app.querySelector('canvas.logo'); if (!c) return;
+  const bmp = await createImageBitmap(await (await fetch(data.marca.logoOscuro)).blob());
+  c.width = bmp.width; c.height = bmp.height; c.getContext('2d').drawImage(bmp, 0, 0); bmp.close();
+}
+
+// ---------- pantallas ----------
+const TOTAL = () => data.disenos.length + 2;
+
+function intro() {
+  app.innerHTML = `<div class="center screen"><div class="box">
+    <canvas id="lg" width="0" height="0" role="img" aria-label="Solor Distribution" style="width:min(320px,70vw)"></canvas>
+    <h1>Propuesta de landing page</h1>
+    <p class="lead">Preparada para <b>${esc(tok.n)}</b>. Incluye el estudio de color de su marca y ${data.disenos.length} diseños con su precio.</p>
+    <ul class="rules">
+      <li>${CHECK}<span>Esta presentación se puede ver <b>una sola vez</b>.</span></li>
+      <li>${CHECK}<span>Cada pantalla se elimina al avanzar y no es posible regresar.</span></li>
+      <li>${CHECK}<span>Tómese su tiempo en cada diseño y anote el número que más le guste.</span></li>
+    </ul>
+    <button class="btn" id="go">Comenzar ${ARROW}</button></div></div>`;
+  (async () => {
+    const c = document.getElementById('lg');
+    const bmp = await createImageBitmap(await (await fetch(data.marca.logoOscuro)).blob());
+    c.width = bmp.width; c.height = bmp.height; c.getContext('2d').drawImage(bmp, 0, 0); bmp.close();
+  })();
+  document.getElementById('go').onclick = () => { clearScreen(); palette(); };
+}
+
+function palette() {
+  const p = data.paleta;
+  app.innerHTML = `<div class="screen">${bar('Estudio de color', 1 / TOTAL())}
+    <section class="hero"><div class="in"><h2>La paleta sale de su logo</h2><p class="lead">${esc(p.intro)}</p></div></section>
+    <div class="wrap">
+      <div class="logos"><div style="background:#fff"><canvas data-src="claro"></canvas></div><div style="background:#01204F"><canvas data-src="oscuro"></canvas></div></div>
+      <h3>Colores medidos</h3>
+      <div class="sw">${p.colores.map(c => `<div class="c"><div class="chip" style="background:${c.hex}"></div>
+        <div class="t"><b>${esc(c.nombre)}</b><span class="hex">${c.hex}</span><span>${esc(c.origen)}</span><span>${esc(c.rol)}</span></div></div>`).join('')}</div>
+      <div class="two">
+        <div><h3>Reglas del sistema</h3><ul class="rules" style="margin-top:16px">${p.reglas.map(r => `<li>${CHECK}<span>${esc(r)}</span></li>`).join('')}</ul></div>
+        <div style="display:grid;gap:24px">
+          <div class="type"><span class="tag">Tipografía de interfaz</span><span class="aa">Aa</span><b>Archivo</b><span class="tag">Una sola familia · titulares anchos</span></div>
+          <table><thead><tr><th>Contraste (WCAG AA)</th><th>Ratio</th></tr></thead><tbody>${p.contraste.map(c => `<tr><td>${esc(c.par)}</td><td>${esc(c.ratio)}</td></tr>`).join('')}</tbody></table>
+        </div>
+      </div>
+      <div class="foot"><span class="note">Siguiente: diseño 1 de ${data.disenos.length}. No podrá regresar a esta pantalla.</span><button class="btn" id="next">Ver los diseños ${ARROW}</button></div>
+    </div></div>`;
+  paintLogo();
+  app.querySelectorAll('.logos canvas').forEach(async c => {
+    const bmp = await createImageBitmap(await (await fetch(c.dataset.src === 'claro' ? data.marca.logoClaro : data.marca.logoOscuro)).blob());
+    c.width = bmp.width; c.height = bmp.height; c.getContext('2d').drawImage(bmp, 0, 0); bmp.close();
+  });
+  document.getElementById('next').onclick = () => { delete data.paleta; clearScreen(); design(0); };
+}
+
+function design(i) {
+  const d = data.disenos[i], lv = data.niveles[d.nivel], last = i === data.disenos.length - 1;
+  app.innerHTML = `<div class="screen">${bar(`Diseño ${d.n} de ${data.disenos.length}`, (i + 2) / TOTAL())}
+    <div class="wrap"><div class="dz">
+      <div><div class="stage"><canvas id="st" aria-label="Vista del diseño ${d.n}" role="img"></canvas></div>
+        <div class="thumbs" role="group" aria-label="Vistas">${d.imagenes.map((_, k) => `<button class="thumb" aria-pressed="${k === 0}" data-k="${k}">${['Inicio','Sección 2','Sección 3','Contacto'][k] || 'Vista ' + (k + 1)}</button>`).join('')}</div></div>
+      <div class="info">
+        <span class="tag">Diseño ${d.n} · Nivel ${esc(lv.nombre)}</span>
+        <h2>${esc(d.titulo)}</h2>
+        ${d.recomendado ? '<span class="rec">Recomendado</span>' : ''}
+        <p>${esc(d.resumen)}</p>
+        <ul>${d.puntos.map(x => `<li>${esc(x)}</li>`).join('')}<li>${esc(lv.detalle)}</li></ul>
+        <div class="price"><span>Inversión única</span><b>${q(d.precio)}</b><span>Entrega estimada: ${esc(lv.entrega)}</span></div>
+      </div></div>
+      <div class="foot"><span class="note">Al avanzar, este diseño se elimina de la pantalla.</span><button class="btn" id="next">${last ? 'Ver resumen' : 'Siguiente diseño'} ${ARROW}</button></div>
+    </div></div>`;
+  paintLogo();
+  const st = document.getElementById('st');
+  paint(st, d.imagenes[0]);
+  app.querySelectorAll('.thumb').forEach(b => b.onclick = () => {
+    app.querySelectorAll('.thumb').forEach(x => x.setAttribute('aria-pressed', x === b));
+    paint(st, d.imagenes[+b.dataset.k]);
+  });
+  document.getElementById('next').onclick = () => {
+    d.imagenes = null;  // la vista se descarta de memoria
+    clearScreen();
+    last ? summary() : design(i + 1);
+  };
+}
+
+function summary() {
+  app.innerHTML = `<div class="screen">${bar('Resumen', 1)}
+    <section class="hero"><div class="in"><h2>Resumen de inversión</h2><p class="lead">Precios por diseño, todos con el mismo alcance. Para elegir, responda a quien le envió este enlace con el número del diseño.</p></div></section>
+    <div class="wrap">
+      <table><thead><tr><th>Diseño</th><th>Nivel</th><th>Entrega</th><th>Inversión</th></tr></thead><tbody>
+      ${data.disenos.map(d => `<tr><td>${d.n}. ${esc(d.titulo)}${d.recomendado ? ' · <b style="color:var(--accent)">Recomendado</b>' : ''}</td><td>${esc(data.niveles[d.nivel].nombre)}</td><td>${esc(data.niveles[d.nivel].entrega)}</td><td><b>${q(d.precio)}</b></td></tr>`).join('')}
+      </tbody></table>
+      <div class="inc">
+        <div><h3>Todos los diseños incluyen</h3><ul>${data.incluye.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+        <div><h3>No incluido</h3><ul>${data.noIncluye.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+          <h3 style="margin-top:24px">Forma de pago</h3><p style="margin-top:8px">${esc(data.pago)}</p></div>
+      </div>
+      <div class="foot"><span class="note">Al finalizar, esta presentación se cierra y el enlace deja de funcionar.</span><button class="btn" id="fin">Finalizar ${ARROW}</button></div>
+    </div></div>`;
+  paintLogo();
+  document.getElementById('fin').onclick = () => end('Gracias por revisar la propuesta. Para elegir un diseño, responda a quien le envió este enlace con el número del diseño.');
+}
+
+// Pegar otro enlace en la misma pestaña abre ese enlace desde cero.
+addEventListener('hashchange', () => { if (/t=/.test(location.hash)) location.reload(); });
+if (!crypto?.subtle) message('Navegador no compatible', 'Abra este enlace en una versión reciente de Chrome, Safari, Edge o Firefox.');
+else start();
+})();
+</script>
+</body>
+</html>
