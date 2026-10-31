@@ -128,10 +128,13 @@ function end(reason) {
 
 // ---------- verificación del enlace ----------
 async function start() {
-  const m = location.hash.match(/t=([\w-]+)\.([\w-]+)/);
+  // El token puede venir en ?t= (más robusto en apps de mensajería) o en #t=.
+  const m = location.search.match(/[?&]t=([\w-]+)\.([\w-]+)/) || location.hash.match(/t=([\w-]+)\.([\w-]+)/);
   // El token sale de la barra de direcciones de inmediato: recargar no vuelve a abrir la presentación.
   history.replaceState(null, '', location.pathname);
-  if (!m) return message('Enlace no válido', 'Este enlace está incompleto o ya fue utilizado. Pide uno nuevo a quien te lo envió.');
+  if (!m) return store.get('solor-opened')
+    ? message('Presentación ya abierta', 'Esta presentación ya se abrió en este navegador y, por seguridad, no se puede volver a cargar. Pide un enlace nuevo a quien te lo envió.')
+    : message('Enlace incompleto', 'El enlace llegó cortado. Ábrelo completo, tal como lo recibiste, o pide uno nuevo a quien te lo envió.');
   const [_, p64, s64] = m;
   let payload;
   try {
@@ -154,6 +157,7 @@ async function start() {
   if (now > payload.e * 1000) return message('Enlace vencido', 'El tiempo para ver esta presentación terminó. Pide un enlace nuevo a quien te lo envió.');
 
   store.set(usedKey, String(Date.now()));
+  store.set('solor-opened', String(Date.now()));
   tok = payload;
   try {
     const bin = new Uint8Array(await (await fetch('data.bin', { cache: 'no-store' })).arrayBuffer());
@@ -194,7 +198,8 @@ function armGuards() {
   // Herramientas de desarrollo: se compara contra el marco del navegador medido al abrir, no contra un valor fijo.
   const base = { w: outerWidth - innerWidth, h: outerHeight - innerHeight };
   let devOpen = false;
-  setInterval(() => {
+  // En celulares la barra del navegador cambia de alto sola: ahí no se mide.
+  if (!matchMedia('(pointer:coarse)').matches) setInterval(() => {
     if (ended) return;
     const open = outerWidth - innerWidth - base.w > 200 || outerHeight - innerHeight - base.h > 200;
     if (open && !devOpen) hide('Cierra las herramientas del navegador para continuar.');
