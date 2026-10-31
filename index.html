@@ -64,10 +64,17 @@ th{color:var(--muted);font-weight:500}
 /* diseño */
 .dz{display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start}
 .stage{position:relative;background:#000;aspect-ratio:16/10;overflow:hidden}
-.stage canvas{width:100%;height:100%;display:block}
-.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
-.thumb{height:56px;background:var(--step1);border:0;padding:0;color:var(--muted);font-size:13px}
-.thumb[aria-pressed=true]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.stage>canvas,.stage>video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.stage>video{pointer-events:none}
+.stage>#mark{pointer-events:none}
+.stage:fullscreen{aspect-ratio:auto}
+.stage:fullscreen>video,.stage:fullscreen>canvas{object-fit:contain}
+.loading{position:absolute;left:16px;bottom:16px;background:var(--night);color:var(--ink);font-size:14px;padding:8px 12px;font-variant-numeric:tabular-nums}
+.vbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.12)}
+.vbar i{display:block;height:100%;width:0;background:var(--accent)}
+.vctl{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.thumb{height:44px;background:var(--step1);border:0;padding:0 16px;color:var(--ink);font-size:14px}
+.thumb:hover{background:var(--step2)}
 .info{display:grid;gap:18px}
 .tag{font-size:14px;color:var(--muted)}
 .price{background:var(--navy);padding:20px;display:grid;gap:4px}
@@ -120,6 +127,7 @@ function end(reason) {
   if (ended) return;
   ended = true;
   data = null;
+  stopVideos(); [...videos.keys()].forEach(dropVideo);
   document.querySelectorAll('canvas').forEach(c => { c.width = 0; c.height = 0; });
   document.querySelector('.wm')?.remove();
   shield.classList.remove('on'); document.body.classList.remove('hidden-content');
@@ -171,8 +179,11 @@ async function start() {
 }
 
 // ---------- protecciones ----------
-function hide(msg) { if (ended) return; shieldMsg.textContent = msg || 'Vuelve a esta ventana para continuar.'; shield.classList.add('on'); document.body.classList.add('hidden-content'); }
-function show() { shield.classList.remove('on'); document.body.classList.remove('hidden-content'); }
+function hide(msg) { if (ended) return; shieldMsg.textContent = msg || 'Vuelve a esta ventana para continuar.'; shield.classList.add('on'); document.body.classList.add('hidden-content'); app.querySelectorAll('video').forEach(v => v.pause()); }
+function show() {
+  shield.classList.remove('on'); document.body.classList.remove('hidden-content');
+  const v = document.getElementById('vid'); if (v && v.src && !v.dataset.paused) v.play().catch(() => {});
+}
 
 function armGuards() {
   for (let i = 0; i < 3; i++) history.pushState({ g: i }, '', location.pathname);
@@ -223,14 +234,43 @@ async function paint(canvas, src) {
   canvas.width = bmp.width; canvas.height = bmp.height;
   const g = canvas.getContext('2d');
   g.drawImage(bmp, 0, 0); bmp.close();
-  g.save(); g.translate(canvas.width / 2, canvas.height / 2); g.rotate(-0.42);
-  g.font = '600 22px Archivo, sans-serif'; g.fillStyle = 'rgba(255,255,255,.13)'; g.textAlign = 'center';
+  mark(g, canvas.width, canvas.height);
+}
+
+function mark(g, w, h, scale = 1) {
+  g.save(); g.translate(w / 2, h / 2); g.rotate(-0.42);
+  g.font = `600 ${22 * scale}px Archivo, sans-serif`; g.fillStyle = 'rgba(255,255,255,.13)'; g.textAlign = 'center';
   const t = `${tok.n} · Propuesta confidencial · ${tok.i}`;
-  for (let y = -canvas.height; y < canvas.height; y += 90) for (let x = -canvas.width; x < canvas.width; x += 560) g.fillText(t, x + ((y / 90) % 2) * 280, y);
+  for (let y = -h; y < h; y += 90 * scale) for (let x = -w; x < w; x += 560 * scale) g.fillText(t, x + (Math.round(y / (90 * scale)) % 2) * 280 * scale, y);
   g.restore();
 }
 
+// ---------- videos cifrados ----------
+const videos = new Map();  // ruta → Promise<objectURL>
+function loadVideo(src, onProgress) {
+  if (!videos.has(src)) videos.set(src, (async () => {
+    const r = await fetch(src, { cache: 'no-store' });
+    const total = +r.headers.get('content-length') || 0, parts = []; let got = 0;
+    const reader = r.body.getReader();
+    for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress?.(total ? got / total : 0); }
+    const bin = new Uint8Array(got); let o = 0; for (const p of parts) { bin.set(p, o); o += p.length; }
+    const k = await crypto.subtle.importKey('raw', b64u(tok.k), 'AES-GCM', false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bin.slice(0, 12) }, k, bin.slice(12));
+    return URL.createObjectURL(new Blob([plain], { type: 'video/mp4' }));
+  })());
+  else if (onProgress) videos.get(src).then(() => onProgress(1));
+  return videos.get(src);
+}
+function dropVideo(src) {
+  const pr = videos.get(src); if (!pr) return;
+  videos.delete(src); pr.then(u => URL.revokeObjectURL(u)).catch(() => {});
+}
+function stopVideos() {
+  app.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
+}
+
 function clearScreen() {
+  stopVideos();
   app.querySelectorAll('canvas').forEach(c => { c.width = 0; c.height = 0; });
   app.innerHTML = '';
   scrollTo(0, 0);
@@ -254,7 +294,7 @@ function intro() {
   app.innerHTML = `<div class="center screen"><div class="box">
     <canvas id="lg" width="0" height="0" role="img" aria-label="Solor Distribution" style="width:min(320px,70vw)"></canvas>
     <h1>Propuesta de landing page</h1>
-    <p class="lead">Preparada para <b>${esc(tok.n)}</b>. Incluye el estudio de color de su marca y ${data.disenos.length} diseños con su precio.</p>
+    <p class="lead">Preparada para <b>${esc(tok.n)}</b>. Incluye el estudio de color de su marca y ${data.disenos.length} diseños en video, con su precio.</p>
     <ul class="rules">
       <li>${CHECK}<span>Esta presentación se puede ver <b>una sola vez</b>.</span></li>
       <li>${CHECK}<span>Cada pantalla se elimina al avanzar y no es posible regresar.</span></li>
@@ -285,7 +325,7 @@ function palette() {
           <table><thead><tr><th>Contraste (WCAG AA)</th><th>Ratio</th></tr></thead><tbody>${p.contraste.map(c => `<tr><td>${esc(c.par)}</td><td>${esc(c.ratio)}</td></tr>`).join('')}</tbody></table>
         </div>
       </div>
-      <div class="foot"><span class="note">Siguiente: diseño 1 de ${data.disenos.length}. No podrá regresar a esta pantalla.</span><button class="btn" id="next">Ver los diseños ${ARROW}</button></div>
+      <div class="foot"><span class="note">Siguiente: diseño ${data.disenos[0].n}, el primero de ${data.disenos.length}. No podrá regresar a esta pantalla.</span><button class="btn" id="next">Ver los diseños ${ARROW}</button></div>
     </div></div>`;
   paintLogo();
   app.querySelectorAll('.logos canvas').forEach(async c => {
@@ -296,11 +336,17 @@ function palette() {
 }
 
 function design(i) {
-  const d = data.disenos[i], lv = data.niveles[d.nivel], last = i === data.disenos.length - 1;
-  app.innerHTML = `<div class="screen">${bar(`Diseño ${d.n} de ${data.disenos.length}`, (i + 2) / TOTAL())}
+  const d = data.disenos[i], lv = data.niveles[d.nivel], last = i === data.disenos.length - 1, N = data.disenos.length;
+  app.innerHTML = `<div class="screen">${bar(`${i + 1} de ${N}`, (i + 2) / TOTAL())}
     <div class="wrap"><div class="dz">
-      <div><div class="stage"><canvas id="st" aria-label="Vista del diseño ${d.n}" role="img"></canvas></div>
-        <div class="thumbs" role="group" aria-label="Vistas">${d.imagenes.map((_, k) => `<button class="thumb" aria-pressed="${k === 0}" data-k="${k}">${['Inicio','Sección 2','Sección 3','Contacto'][k] || 'Vista ' + (k + 1)}</button>`).join('')}</div></div>
+      <div><div class="stage" id="stage">
+          <canvas id="poster" role="img" aria-label="Vista inicial del diseño ${d.n}"></canvas>
+          <video id="vid" muted playsinline loop disablepictureinpicture disableremoteplayback controlslist="nodownload noplaybackrate nofullscreen" preload="auto" tabindex="-1" aria-label="Recorrido del diseño ${d.n} de arriba a abajo"></video>
+          <canvas id="mark" aria-hidden="true"></canvas>
+          <div class="loading" id="ld">Cargando recorrido…</div>
+          <div class="vbar"><i id="vb"></i></div>
+        </div>
+        <div class="vctl"><button class="thumb" id="pp" disabled>Pausar</button><button class="thumb" id="rs" disabled>Ver desde el inicio</button>${document.fullscreenEnabled ? '<button class="thumb" id="fs">Pantalla completa</button>' : ''}</div></div>
       <div class="info">
         <span class="tag">Diseño ${d.n} · Nivel ${esc(lv.nombre)}</span>
         <h2>${esc(d.titulo)}</h2>
@@ -309,18 +355,43 @@ function design(i) {
         <ul>${d.puntos.map(x => `<li>${esc(x)}</li>`).join('')}<li>${esc(lv.detalle)}</li></ul>
         <div class="price"><span>Inversión única</span><b>${q(d.precio)}</b><span>Entrega estimada: ${esc(lv.entrega)}</span></div>
       </div></div>
-      <div class="foot"><span class="note">Al avanzar, este diseño se elimina de la pantalla.</span><button class="btn" id="next">${last ? 'Ver resumen' : 'Siguiente diseño'} ${ARROW}</button></div>
+      <div class="foot"><span class="note">El video muestra el diseño real recorrido de arriba a abajo. Al avanzar, este diseño se elimina de la pantalla.</span><button class="btn" id="next">${last ? 'Ver resumen' : 'Siguiente diseño'} ${ARROW}</button></div>
     </div></div>`;
   paintLogo();
-  const st = document.getElementById('st');
-  paint(st, d.imagenes[0]);
-  app.querySelectorAll('.thumb').forEach(b => b.onclick = () => {
-    app.querySelectorAll('.thumb').forEach(x => x.setAttribute('aria-pressed', x === b));
-    paint(st, d.imagenes[+b.dataset.k]);
-  });
+  const stage = document.getElementById('stage'), vid = document.getElementById('vid'), mk = document.getElementById('mark');
+  const ld = document.getElementById('ld'), vb = document.getElementById('vb'), pp = document.getElementById('pp'), rs = document.getElementById('rs');
+  paint(document.getElementById('poster'), d.poster);
+
+  // Marca de agua encima del video, redibujada al tamaño real del recuadro.
+  const drawMark = () => {
+    const r = stage.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+    mk.width = r.width * dpr; mk.height = r.height * dpr;
+    mark(mk.getContext('2d'), mk.width, mk.height, dpr * Math.max(.6, r.width / 1280));
+  };
+  drawMark();
+  const ro = new ResizeObserver(drawMark); ro.observe(stage);
+
+  loadVideo(d.video, p => { ld.textContent = `Cargando recorrido… ${Math.round(p * 100)} %`; }).then(url => {
+    if (ended || !vid.isConnected) return;
+    vid.src = url;
+    vid.play().catch(() => {});
+    ld.remove(); pp.disabled = rs.disabled = false;
+    const nx = data.disenos[i + 1]; if (nx) loadVideo(nx.video);  // adelanta la descarga del siguiente
+  }).catch(() => { ld.textContent = 'No se pudo cargar el recorrido. Revise su conexión.'; });
+  vid.addEventListener('timeupdate', () => { if (vid.duration) vb.style.width = (vid.currentTime / vid.duration * 100) + '%'; });
+  pp.onclick = () => {
+    if (vid.paused) { delete vid.dataset.paused; vid.play().catch(() => {}); pp.textContent = 'Pausar'; }
+    else { vid.dataset.paused = '1'; vid.pause(); pp.textContent = 'Reproducir'; }
+  };
+  rs.onclick = () => { vid.currentTime = 0; delete vid.dataset.paused; vid.play().catch(() => {}); pp.textContent = 'Pausar'; };
+  const fs = document.getElementById('fs');
+  if (fs) fs.onclick = () => document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen().catch(() => {});
+
   document.getElementById('next').onclick = () => {
-    d.imagenes = null;  // la vista se descarta de memoria
+    ro.disconnect();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     clearScreen();
+    dropVideo(d.video); d.poster = d.video = null;  // el diseño se descarta de memoria
     last ? summary() : design(i + 1);
   };
 }
