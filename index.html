@@ -353,7 +353,7 @@ function design(i) {
         ${d.recomendado ? '<span class="rec">Recomendado</span>' : ''}
         <p>${esc(d.resumen)}</p>
         <ul>${d.puntos.map(x => `<li>${esc(x)}</li>`).join('')}<li>${esc(lv.detalle)}</li></ul>
-        <div class="price"><span>Inversión única</span><b>${q(d.precio)}</b><span>Entrega estimada: ${esc(lv.entrega)}</span></div>
+        <div class="price"><span>Inversión única</span><b>${q(d.precio)}</b><span>Entrega estimada: ${esc(lv.entrega)}</span><span>+ ${esc(data.plan.nombre.toLowerCase())}: ${q(data.plan.precio)}</span></div>
       </div></div>
       <div class="foot"><span class="note">El video muestra el diseño real recorrido de arriba a abajo. Al avanzar, este diseño se elimina de la pantalla.</span><button class="btn" id="next">${last ? 'Ver resumen' : 'Siguiente diseño'} ${ARROW}</button></div>
     </div></div>`;
@@ -398,7 +398,7 @@ function design(i) {
 
 function summary() {
   app.innerHTML = `<div class="screen">${bar('Resumen', 1)}
-    <section class="hero"><div class="in"><h2>Resumen de inversión</h2><p class="lead">Precios por diseño, todos con el mismo alcance. Para elegir, responda a quien le envió este enlace con el número del diseño.</p></div></section>
+    <section class="hero"><div class="in"><h2>Resumen de inversión</h2><p class="lead">Precio único por diseño, todos con el mismo alcance, más el plan anual para mantener la página en línea. Para elegir, responda a quien le envió este enlace con el número del diseño.</p></div></section>
     <div class="wrap">
       <table><thead><tr><th>Diseño</th><th>Nivel</th><th>Entrega</th><th>Inversión</th></tr></thead><tbody>
       ${data.disenos.map(d => `<tr><td>${d.n}. ${esc(d.titulo)}${d.recomendado ? ' · <b style="color:var(--accent)">Recomendado</b>' : ''}</td><td>${esc(data.niveles[d.nivel].nombre)}</td><td>${esc(data.niveles[d.nivel].entrega)}</td><td><b>${q(d.precio)}</b></td></tr>`).join('')}
@@ -407,6 +407,11 @@ function summary() {
         <div><h3>Todos los diseños incluyen</h3><ul>${data.incluye.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
         <div><h3>No incluido</h3><ul>${data.noIncluye.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
           <h3 style="margin-top:24px">Forma de pago</h3><p style="margin-top:8px">${esc(data.pago)}</p></div>
+      </div>
+      <div class="price" style="margin-top:32px;gap:12px">
+        <span>${esc(data.plan.nombre)}</span><b>${q(data.plan.precio)} <small style="font-size:18px;font-stretch:100%">al año</small></b>
+        <ul style="margin:0;padding-left:20px;display:grid;gap:6px">${data.plan.detalle.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        <span>${esc(data.plan.nota)}</span>
       </div>
       <div class="foot"><span class="note">Al finalizar, esta presentación se cierra y el enlace deja de funcionar.</span><button class="btn" id="fin">Finalizar ${ARROW}</button></div>
     </div></div>`;
