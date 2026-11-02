@@ -168,7 +168,7 @@ async function start() {
   store.set('solor-opened', String(Date.now()));
   tok = payload;
   try {
-    const bin = new Uint8Array(await (await fetch('data.bin', { cache: 'no-store' })).arrayBuffer());
+    const bin = new Uint8Array(await (await fetch(payload.b === 'm' ? 'data-m.bin' : 'data.bin', { cache: 'no-store' })).arrayBuffer());
     const k = await crypto.subtle.importKey('raw', b64u(payload.k), 'AES-GCM', false, ['decrypt']);
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bin.slice(0, 12) }, k, bin.slice(12));
     data = JSON.parse(new TextDecoder().decode(plain));
@@ -254,7 +254,7 @@ function loadVideo(src, onProgress) {
     const reader = r.body.getReader();
     for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress?.(total ? got / total : 0); }
     const bin = new Uint8Array(got); let o = 0; for (const p of parts) { bin.set(p, o); o += p.length; }
-    const k = await crypto.subtle.importKey('raw', b64u(tok.k), 'AES-GCM', false, ['decrypt']);
+    const k = await crypto.subtle.importKey('raw', b64u(data?.vk || tok.k), 'AES-GCM', false, ['decrypt']);
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bin.slice(0, 12) }, k, bin.slice(12));
     return URL.createObjectURL(new Blob([plain], { type: 'video/mp4' }));
   })());
@@ -288,13 +288,13 @@ async function paintLogo() {
 }
 
 // ---------- pantallas ----------
-const TOTAL = () => data.disenos.length + 2;
+const TOTAL = () => data.disenos.length + (data.muestra ? 1 : 2);
 
 function intro() {
   app.innerHTML = `<div class="center screen"><div class="box">
     <canvas id="lg" width="0" height="0" role="img" aria-label="Solor Distribution" style="width:min(320px,70vw)"></canvas>
     <h1>Propuesta de landing page</h1>
-    <p class="lead">Preparada para <b>${esc(tok.n)}</b>. Incluye el estudio de color de su marca y ${data.disenos.length} diseños en video, con su precio.</p>
+    <p class="lead">Preparada para <b>${esc(tok.n)}</b>. Incluye el estudio de color de su marca y ${data.disenos.length} diseños en video${data.muestra ? '' : ', con su precio'}.</p>
     <ul class="rules">
       <li>${CHECK}<span>Esta presentación se puede ver <b>una sola vez</b>.</span></li>
       <li>${CHECK}<span>Cada pantalla se elimina al avanzar y no es posible regresar.</span></li>
@@ -353,9 +353,9 @@ function design(i) {
         ${d.recomendado ? '<span class="rec">Recomendado</span>' : ''}
         <p>${esc(d.resumen)}</p>
         <ul>${d.puntos.map(x => `<li>${esc(x)}</li>`).join('')}<li>${esc(lv.detalle)}</li></ul>
-        <div class="price"><span>Inversión única</span><b>${q(d.precio)}</b><span>Entrega estimada: ${esc(lv.entrega)}</span><span>+ ${esc(data.plan.nombre.toLowerCase())}: ${q(data.plan.precio)}</span></div>
+        ${data.muestra ? '' : `<div class="price"><span>Inversión única</span><b>${q(d.precio)}</b><span>Entrega estimada: ${esc(lv.entrega)}</span><span>+ ${esc(data.plan.nombre.toLowerCase())}: ${q(data.plan.precio)}</span></div>`}
       </div></div>
-      <div class="foot"><span class="note">El video muestra el diseño real recorrido de arriba a abajo. Al avanzar, este diseño se elimina de la pantalla.</span><button class="btn" id="next">${last ? 'Ver resumen' : 'Siguiente diseño'} ${ARROW}</button></div>
+      <div class="foot"><span class="note">El video muestra el diseño real recorrido de arriba a abajo. Al avanzar, este diseño se elimina de la pantalla.</span><button class="btn" id="next">${last ? (data.muestra ? 'Finalizar' : 'Ver resumen') : 'Siguiente diseño'} ${ARROW}</button></div>
     </div></div>`;
   paintLogo();
   const stage = document.getElementById('stage'), vid = document.getElementById('vid'), mk = document.getElementById('mark');
@@ -392,7 +392,9 @@ function design(i) {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     clearScreen();
     dropVideo(d.video); d.poster = d.video = null;  // el diseño se descarta de memoria
-    last ? summary() : design(i + 1);
+    if (!last) design(i + 1);
+    else if (data.muestra) end('Gracias por revisar los diseños. Para comentarios, responda a quien le envió este enlace con el número del diseño que más le gustó.');
+    else summary();
   };
 }
 
