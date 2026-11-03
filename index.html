@@ -152,8 +152,10 @@ async function start() {
     payload = JSON.parse(new TextDecoder().decode(b64u(p64)));
   } catch { return message('Enlace no válido', 'Este enlace fue modificado o no es auténtico.'); }
 
+  // Enlaces de uso múltiple (r): no se marcan como usados y el token vuelve a la dirección para poder recargar.
+  if (payload.r) history.replaceState(null, '', `${location.pathname}?t=${p64}.${s64}`);
   const usedKey = 'solor-used-' + payload.i;
-  if (store.get(usedKey)) return message('Enlace ya utilizado', 'Esta presentación ya se abrió una vez en este dispositivo. Pide un enlace nuevo a quien te lo envió.');
+  if (!payload.r && store.get(usedKey)) return message('Enlace ya utilizado', 'Esta presentación ya se abrió una vez en este dispositivo. Pide un enlace nuevo a quien te lo envió.');
 
   let now = Date.now(), revoked = [];
   try {
@@ -164,8 +166,7 @@ async function start() {
   if (revoked.includes(payload.i)) return message('Enlace desactivado', 'Este enlace fue desactivado. Pide uno nuevo a quien te lo envió.');
   if (now > payload.e * 1000) return message('Enlace vencido', 'El tiempo para ver esta presentación terminó. Pide un enlace nuevo a quien te lo envió.');
 
-  store.set(usedKey, String(Date.now()));
-  store.set('solor-opened', String(Date.now()));
+  if (!payload.r) { store.set(usedKey, String(Date.now())); store.set('solor-opened', String(Date.now())); }
   tok = payload;
   try {
     const bin = new Uint8Array(await (await fetch(payload.b === 'm' ? 'data-m.bin' : 'data.bin', { cache: 'no-store' })).arrayBuffer());
@@ -186,8 +187,8 @@ function show() {
 }
 
 function armGuards() {
-  for (let i = 0; i < 3; i++) history.pushState({ g: i }, '', location.pathname);
-  addEventListener('popstate', () => end('Saliste de la presentación. Por seguridad, cada enlace se puede ver una sola vez.'));
+  for (let i = 0; i < 3; i++) history.pushState({ g: i }, '', location.pathname + location.search);
+  addEventListener('popstate', () => end(tok.r ? 'Saliste de la presentación. Puede volver a abrir el enlace mientras esté vigente.' : 'Saliste de la presentación. Por seguridad, cada enlace se puede ver una sola vez.'));
   ['contextmenu','dragstart','selectstart','copy','cut'].forEach(ev => addEventListener(ev, e => e.preventDefault(), true));
   addEventListener('keydown', e => {
     const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
@@ -203,7 +204,7 @@ function armGuards() {
   addEventListener('focus', show);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { hiddenAt = Date.now(); hide(); }
-    else if (hiddenAt && Date.now() - hiddenAt > 90000) end('La presentación se cerró por inactividad. Cada enlace se puede ver una sola vez.');
+    else if (hiddenAt && Date.now() - hiddenAt > 90000) end(tok.r ? 'La presentación se cerró por inactividad. Puede volver a abrir el enlace mientras esté vigente.' : 'La presentación se cerró por inactividad. Cada enlace se puede ver una sola vez.');
   });
   addEventListener('beforeprint', () => hide('La impresión está deshabilitada.'));
   // Herramientas de desarrollo: se compara contra el marco del navegador medido al abrir, no contra un valor fijo.
@@ -296,7 +297,7 @@ function intro() {
     <h1>Propuesta de landing page</h1>
     <p class="lead">Preparada para <b>${esc(tok.n)}</b>. Incluye el estudio de color de su marca y ${data.disenos.length} diseños en video${data.muestra ? '' : ', con su precio'}.</p>
     <ul class="rules">
-      <li>${CHECK}<span>Esta presentación se puede ver <b>una sola vez</b>.</span></li>
+      <li>${CHECK}<span>${tok.r ? `Puede abrir esta presentación <b>las veces que quiera</b> hasta el ${new Date(tok.e * 1000).toLocaleDateString('es-GT', { day: 'numeric', month: 'long' })}.` : 'Esta presentación se puede ver <b>una sola vez</b>.'}</span></li>
       <li>${CHECK}<span>Cada pantalla se elimina al avanzar y no es posible regresar.</span></li>
       <li>${CHECK}<span>Tómese su tiempo en cada diseño y anote el número que más le guste.</span></li>
     </ul>
