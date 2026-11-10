@@ -1,0 +1,18 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>Solor Distribution · Avance</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b1b3a;color:#e8edf5;font:16px system-ui,sans-serif;text-align:center;padding:16px}</style>
+</head><body><p id="m">Cargando la vista de avance…</p><script>
+(async () => {
+  const m = document.getElementById('m');
+  try {
+    const k = new URLSearchParams(location.hash.slice(1)).get('k');
+    if (!k) throw 0;
+    const raw = Uint8Array.from(atob(k.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+    const buf = new Uint8Array(await (await fetch('data.bin', { cache: 'no-store' })).arrayBuffer());
+    const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+    const html = new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12)));
+    document.open(); document.write(html); document.close();
+  } catch (e) { m.textContent = 'Este enlace no es válido o ya fue reemplazado. Pida uno nuevo.'; }
+})();
+</script></body></html>
